@@ -180,7 +180,7 @@ async def exchange_token() -> Tuple[str, str]:
     cached = _token_cache.get(GITHUB_TOKEN)
     if cached:
         copilot_token, api_base, expires_at = cached
-        if time.time() < expires_at - 300:
+        if time.time() < expires_at - 600:
             return copilot_token, api_base
 
     # Slow path: acquire lock, check again, then call API if needed
@@ -188,7 +188,7 @@ async def exchange_token() -> Tuple[str, str]:
         cached = _token_cache.get(GITHUB_TOKEN)
         if cached:
             copilot_token, api_base, expires_at = cached
-            if time.time() < expires_at - 300:
+            if time.time() < expires_at - 600:
                 return copilot_token, api_base
 
         url = f"{GITHUB_API}{COPILOT_TOKEN_ENDPOINT}"
@@ -1026,9 +1026,9 @@ async def chat_completions(request: Request):
 
     model_id = body.get("model", "")
 
-    # Default max_tokens to 32000 if not specified by user
+    # Default max_tokens — thinking models cần budget lớn hơn
     if "max_tokens" not in body and "max_completion_tokens" not in body:
-        body["max_tokens"] = 32000
+        body["max_tokens"] = 128000
 
     # 3. Get model pricing — reject unknown models
     pricing = await get_model_pricing(model_id)
